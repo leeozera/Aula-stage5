@@ -1,17 +1,4 @@
-export class GitHubUser {
-  static search(username) {
-    const endpoint = `https://api.github.com/users/${username}`;
-
-    return fetch(endpoint)
-      .then((data) => data.json())
-      .then(({ login, name, public_repos, followers }) => ({
-        login,
-        name,
-        public_repos,
-        followers,
-      }));
-  }
-}
+import { GitHubUser } from "../gitHubUser.js";
 
 //classe que vai conter a logica dos dados
 // como os dados serão estruturados
@@ -33,6 +20,12 @@ export class Favorites {
 
   async add(username) {
     try {
+      const userExist = this.entries.find((user) => user.login === username);
+
+      if (userExist) {
+        throw new Error("usuario ja cadastrado");
+      }
+
       const user = await GitHubUser.search(username);
 
       if (user.login === undefined) {
@@ -74,6 +67,7 @@ export class FavoritesView extends Favorites {
       const { value } = this.root.querySelector(".search input");
 
       this.add(value);
+      this.root.querySelector(".search input").value = "";
     };
   }
 
@@ -86,10 +80,12 @@ export class FavoritesView extends Favorites {
         ".user img"
       ).src = `https://github.com/${user.login}.png`;
       row.querySelector(".user img").alt = user.name;
+      row.querySelector(".user a").href = `https://github.com/${user.login}`;
+      row.querySelector(".user a").target = "blank";
       row.querySelector(".user p ").textContent = user.name;
       row.querySelector(".user span").textContent = user.login;
       row.querySelector(".repositories").textContent = user.public_repos;
-      row.querySelector(".fallowers").textContent = user.fallowers;
+      row.querySelector(".fallowers").textContent = user.followers;
 
       row.querySelector(".remove").onclick = () => {
         const isOk = confirm("Tem certeza que deseja deletar essa linha ?");
